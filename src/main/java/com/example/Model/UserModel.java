@@ -36,8 +36,5 @@ public class UserModel {
     @Column(nullable = true, unique = true)
     public String phone;
 
-	public static Object builder() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 }
