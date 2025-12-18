@@ -21,7 +21,7 @@ public class AuthService {
     PasswordEncoder passwordEncoder;
     
     @Autowired
-    JwtUtil jwtUtil;
+    JwtUtil jwtUtil; 
 
     public String register(RegisterRequest req) {
 
