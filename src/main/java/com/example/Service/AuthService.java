@@ -8,15 +8,20 @@ import com.example.Dto.LoginRegister;
 import com.example.Dto.RegisterRequest;
 import com.example.Model.UserModel;
 import com.example.Repository.UserRepository;
+import com.example.Security.JwtUtil;
 
 @Service
 public class AuthService {
+
 
     @Autowired
     UserRepository userRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    JwtUtil jwtUtil;
 
     public String register(RegisterRequest req) {
 
@@ -37,6 +42,7 @@ public class AuthService {
 
     public String login(LoginRegister req) {
 
+    	
         UserModel userModel = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid Email"));
 
@@ -44,6 +50,6 @@ public class AuthService {
             throw new RuntimeException("Invalid Password");
         }
 
-        return "Login success";
+        return jwtUtil.generateToken(userModel.getEmail());
     }
 }
