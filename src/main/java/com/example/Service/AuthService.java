@@ -6,22 +6,21 @@ import org.springframework.stereotype.Service;
 
 import com.example.Dto.LoginRegister;
 import com.example.Dto.RegisterRequest;
-import com.example.Model.UserModel;
+import com.example.Model.User;
 import com.example.Repository.UserRepository;
 import com.example.Security.JwtUtil;
 
 @Service
 public class AuthService {
 
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
     
     @Autowired
-    JwtUtil jwtUtil; 
+    private JwtUtil jwtUtil; 
 
     public String register(RegisterRequest req) {
 
@@ -29,27 +28,26 @@ public class AuthService {
             return "Already registered";
         }
 
-        UserModel userModel = UserModel.builder()
+        User user = User.builder()
                 .email(req.getEmail())
                 .password(passwordEncoder.encode(req.getPassword()))
                 .username(req.getUsername())
                 .phone(req.getPhone())
                 .build();
 
-        userRepository.save(userModel);
+        userRepository.save(user);
         return "Registered Successfully";
     }
 
     public String login(LoginRegister req) {
 
-    	
-        UserModel userModel = userRepository.findByEmail(req.getEmail())
+        User user = userRepository.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid Email"));
 
-        if (!passwordEncoder.matches(req.getPassword(), userModel.getPassword())) {
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid Password");
         }
 
-        return jwtUtil.generateToken(userModel.getEmail());
+        return jwtUtil.generateToken(user.getEmail());
     }
 }
