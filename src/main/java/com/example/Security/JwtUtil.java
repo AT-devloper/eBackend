@@ -47,8 +47,8 @@ public class JwtUtil {
 			return false;
 		}	
 	}
-	  
-	 //Claims = Payload
+	 
+	  //Claims = Payload
 	 private Claims getClaims(String token) {
 		return Jwts.parserBuilder()
 			    .setSigningKey(key)
