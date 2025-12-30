@@ -21,35 +21,50 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
-    
+
     @Autowired
     private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest req,
-            HttpServletResponse resp,
+            HttpServletRequest request,
+            HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        String header = req.getHeader("Authorization");
+        String path = request.getServletPath();
+
+        // 🔓 Skip JWT for all public /auth endpoints
+        if (path.startsWith("/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
+
             String token = header.substring(7);
 
             if (jwtUtil.isValid(token)) {
+
                 String email = jwtUtil.extractEmail(token);
+
                 User user = userRepository.findByEmail(email).orElse(null);
 
                 if (user != null) {
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(user, null, null);
 
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    user, null, null);
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authentication);
                 }
             }
         }
 
-        filterChain.doFilter(req, resp);
+        filterChain.doFilter(request, response);
     }
 }

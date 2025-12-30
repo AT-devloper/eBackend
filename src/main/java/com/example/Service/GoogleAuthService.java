@@ -53,17 +53,28 @@ public class GoogleAuthService {
             throw new RuntimeException("Email not verified by Google");
         }
 
+        // Try to find existing user by email
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> {
+                    // Generate unique username based on email
+                    String baseUsername = email.split("@")[0];
+                    String username = baseUsername;
+                    int count = 1;
+                    while(userRepository.existsByUsername(username)) {
+                        username = baseUsername + count;
+                        count++;
+                    }
+
                     User newUser = User.builder()
                             .email(email)
                             .password("GOOGLE_LOGIN")
-                            .username("username")
-                            .phone("4598745632")
+                            .username(username)
+                            .phone("") // optional: remove if you want blank
                             .build();
                     return userRepository.save(newUser);
                 });
 
         return jwtUtil.generateToken(user.getEmail());
     }
+
 }

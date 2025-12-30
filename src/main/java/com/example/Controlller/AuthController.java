@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Dto.GoogleLoginRequest;
 import com.example.Dto.LoginRegister;
-import com.example.Dto.RegisterRequest;
 import com.example.Service.AuthService;
 import com.example.Service.GoogleAuthService;
 
@@ -21,11 +20,6 @@ public class AuthController {
 
     @Autowired
     private GoogleAuthService googleAuthService; // Injected as instance
-
-    @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest req) {
-        return authService.register(req);
-    }
 
     @PostMapping("/login")
     public String login(@RequestBody LoginRegister req) {

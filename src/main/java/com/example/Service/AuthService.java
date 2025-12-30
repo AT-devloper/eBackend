@@ -18,12 +18,12 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Autowired
-    private JwtUtil jwtUtil; 
+    private JwtUtil jwtUtil;
 
+    // REGISTER USER
     public String register(RegisterRequest req) {
-
         if (userRepository.existsByEmail(req.getEmail())) {
             return "Already registered";
         }
@@ -39,10 +39,19 @@ public class AuthService {
         return "Registered Successfully";
     }
 
+    // LOGIN WITH EMAIL OR PHONE
     public String login(LoginRegister req) {
+        User user = null;
 
-        User user = userRepository.findByEmail(req.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid Email"));
+        if (req.getEmail() != null && !req.getEmail().isEmpty()) {
+            user = userRepository.findByEmail(req.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Invalid Email or Phone"));
+        } else if (req.getPhone() != null && !req.getPhone().isEmpty()) {
+            user = userRepository.findByPhone(req.getPhone())
+                    .orElseThrow(() -> new RuntimeException("Invalid Email or Phone"));
+        } else {
+            throw new RuntimeException("Email or Phone is required");
+        }
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid Password");
