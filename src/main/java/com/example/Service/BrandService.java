@@ -14,11 +14,12 @@ import com.example.Repository.BrandRepository;
 
 @Service
 public class BrandService {
-    
-	@Autowired
-	BrandRepository brandRepository;
-	@Autowired
-    ModelMapper modelMapper;
+
+    @Autowired
+    private BrandRepository brandRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     // BULK CREATE
     public void createBrandsBulk(List<BrandRequestDto> dtos) {
@@ -33,6 +34,14 @@ public class BrandService {
         return brandRepository.findAll()
                 .stream()
                 .map(brand -> modelMapper.map(brand, BrandResponseDto.class))
+                .collect(Collectors.toList());
+    }
+
+    // ✅ NEW METHOD: GET BRANDS BY IDS
+    public List<BrandResponseDto> getBrandsByIds(List<Long> brandIds) {
+        return brandRepository.findAllById(brandIds)
+                .stream()
+                .map(b -> modelMapper.map(b, BrandResponseDto.class))
                 .collect(Collectors.toList());
     }
 }

@@ -1,5 +1,8 @@
 package com.example.Model;
 
-public class DiscountType {
-
+public enum DiscountType {
+    PERCENT,
+    FLAT
 }
+
+

@@ -32,6 +32,8 @@ public class User {
 
     
     private String status = "PENDING";
+    
+    
 		
 	
 }

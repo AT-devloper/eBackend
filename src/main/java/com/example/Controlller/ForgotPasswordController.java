@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 public class ForgotPasswordController {
+	
+	@Autowired
+    ForgotPasswordService forgotPasswordService;
 
-    private final ForgotPasswordService forgotPasswordService;
-
-    @Autowired
     public ForgotPasswordController(ForgotPasswordService forgotPasswordService) {
         this.forgotPasswordService = forgotPasswordService;
     }

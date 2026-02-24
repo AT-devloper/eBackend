@@ -1,5 +1,8 @@
 package com.example.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,7 +43,7 @@ public class AuthService {
     }
 
     // LOGIN WITH EMAIL OR PHONE
-    public String login(LoginRegister req) {
+    public Map<String, Object> login(LoginRegister req) {
         User user = null;
 
         if (req.getEmail() != null && !req.getEmail().isEmpty()) {
@@ -53,10 +56,23 @@ public class AuthService {
             throw new RuntimeException("Email or Phone is required");
         }
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+        if (user.getPassword() == null || !passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid Password");
         }
 
-        return jwtUtil.generateToken(user.getEmail());
+        // Generate JWT with username claim
+        String token = jwtUtil.generateToken(user);
+
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("id", user.getId());
+        userInfo.put("username", user.getUsername() != null ? user.getUsername() : "");
+        userInfo.put("email", user.getEmail());
+        userInfo.put("phone", user.getPhone() != null ? user.getPhone() : "");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", userInfo);
+
+        return response;
     }
 }

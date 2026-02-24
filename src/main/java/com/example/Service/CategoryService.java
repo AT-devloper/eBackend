@@ -1,19 +1,13 @@
 package com.example.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
+import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-
 import com.example.Dto.CategoryRequestDto;
 import com.example.Dto.CategoryResponseDto;
 import com.example.Model.Category;
 import com.example.Repository.CategoryRepository;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,9 +17,14 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final ModelMapper modelMapper;
 
-    
-      //Create categories in bulk (root → child → subcategories)
-     
+    // 1. GET ALL (Missing in your previous version)
+    public List<CategoryResponseDto> getAllCategories() {
+        return categoryRepository.findAll().stream()
+                .map(cat -> modelMapper.map(cat, CategoryResponseDto.class))
+                .collect(Collectors.toList());
+    }
+
+    // 2. BULK CREATE (Your exact logic)
     public void createCategoriesBulk(List<CategoryRequestDto> dtos) {
         Map<String, Category> tempMap = new HashMap<>();
 
@@ -33,7 +32,7 @@ public class CategoryService {
         for (CategoryRequestDto dto : dtos) {
             if (dto.getParentTempId() == null) {
                 Category category = modelMapper.map(dto, Category.class);
-                category.setLevel(1); // root level
+                category.setLevel(1);
                 categoryRepository.save(category);
                 tempMap.put(dto.getTempId(), category);
             }
@@ -53,14 +52,12 @@ public class CategoryService {
             }
         }
 
-        // 3️⃣ Save nested SUB categories (multi-level)
+        // 3️⃣ Save nested SUB categories (multi-level do-while)
         boolean pending;
         do {
             pending = false;
-
             for (CategoryRequestDto dto : dtos) {
-                if (dto.getParentTempId() != null
-                        && !tempMap.containsKey(dto.getTempId())) {
+                if (dto.getParentTempId() != null && !tempMap.containsKey(dto.getTempId())) {
                     Category parent = tempMap.get(dto.getParentTempId());
                     if (parent != null) {
                         Category category = modelMapper.map(dto, Category.class);
@@ -69,16 +66,14 @@ public class CategoryService {
                         categoryRepository.save(category);
                         tempMap.put(dto.getTempId(), category);
                     } else {
-                        pending = true; // parent not yet created
+                        pending = true; 
                     }
                 }
             }
         } while (pending);
     }
 
-    /**
-     * Get breadcrumb (root → current category)
-     */
+    // 3. BREADCRUMB (Your exact logic)
     public List<CategoryResponseDto> getBreadcrumb(Long categoryId) {
         List<CategoryResponseDto> breadcrumb = new ArrayList<>();
         Category current = categoryRepository.findById(categoryId)
@@ -91,7 +86,7 @@ public class CategoryService {
                     : categoryRepository.findById(current.getParentId()).orElse(null);
         }
 
-        Collections.reverse(breadcrumb); // root → current
+        Collections.reverse(breadcrumb);
         return breadcrumb;
     }
 }

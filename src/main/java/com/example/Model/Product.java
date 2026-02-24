@@ -19,16 +19,22 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
+
     private String slug;
 
     @Column(length = 2000)
     private String description;
 
-    private Long categoryId; // FK → Category
-    private Long brandId;    // FK → Brand
+    private Long categoryId; 
+    private Long brandId;  
 
     private Boolean isActive = true;
+    
+    @Column
+    private Double price;
+
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }

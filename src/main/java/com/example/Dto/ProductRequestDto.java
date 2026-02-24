@@ -9,7 +9,8 @@ public class ProductRequestDto {
 	private String slug;
 	private String description;
 	
-	private String categoryId;
-	private String brandId;
+	private Long categoryId;
+	private Long brandId;
+
 	
 }

@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <style>
+        /* Java will inject the CSS content here automatically */
+        [[CSS_STYLES]]
+    </style>
+</head>
+<body>
+
+    <table class="layout-table">
+        <tr>
+            <td width="60%" valign="top">
+                <div class="brand">AT-LUXE</div>
+                <div class="company-info">
+                    123 Business Road, Bhopal, MP<br />
+                    Email: support@atluxegold.com<br />
+                    Phone: +91 98765 43210
+                </div>
+            </td>
+            <td width="40%" valign="top" style="text-align: right;">
+                <div class="invoice-title">INVOICE</div>
+                <div class="invoice-details">
+                    <b>Order #:</b> [[ORDER_NO]]<br />
+                    <b>Date:</b> [[ORDER_DATE]]<br />
+                    <b>Status:</b> [[ORDER_STATUS]]
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="spacer"></div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th width="50%" align="left">Item Description</th>
+                <th width="15%" align="center">Qty</th>
+                <th width="15%" align="right">Price</th>
+                <th width="20%" align="right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            [[ITEMS_ROWS]]
+        </tbody>
+    </table>
+
+    <table class="layout-table" style="margin-top: 20px;">
+        <tr>
+            <td width="60%" valign="top" class="notes">
+                Thankyou for Choosing AT-LUXE .
+            </td>
+            
+            <td width="40%" valign="top">
+                <table class="totals-table">
+                    <tr>
+                        <td class="label">Subtotal:</td>
+                        <td class="value">&#8377; [[TOTAL_AMOUNT]]</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Tax (0%):</td>
+                        <td class="value">&#8377; 0.00</td>
+                    </tr>
+                    <tr class="grand-total-row">
+                        <td class="label">Grand Total:</td>
+                        <td class="value">&#8377; [[TOTAL_AMOUNT]]</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        This is a computer-generated invoice.
+    </div>
+
+</body>
+</html>

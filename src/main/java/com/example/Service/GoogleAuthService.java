@@ -1,13 +1,20 @@
 package com.example.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.Model.Role;
 import com.example.Model.User;
+import com.example.Model.UserRole;
+import com.example.Repository.RoleRepository;
 import com.example.Repository.UserRepository;
+import com.example.Repository.UserRoleRepository;
 import com.example.Security.JwtUtil;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -21,60 +28,71 @@ public class GoogleAuthService {
     private UserRepository userRepository;
 
     @Autowired
+    private UserRoleRepository userRoleRepo;
+
+    @Autowired
+    private RoleRepository roleRepo;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     @Value("${google.client-id}")
     private String googleClientId;
 
-    public String loginWithGoogle(String idTokenString) {
-
+    public Map<String, Object> loginWithGoogle(String idTokenString) {
         GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(),
-                GsonFactory.getDefaultInstance())
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
+                GsonFactory.getDefaultInstance()
+        ).setAudience(Collections.singletonList(googleClientId))
+         .build();
 
-        GoogleIdToken idToken;
         try {
-            idToken = verifier.verify(idTokenString);
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid Google token");
-        }
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            if (idToken == null) throw new RuntimeException("Invalid Google token");
 
-        if (idToken == null) {
-            throw new RuntimeException("Invalid Google token");
-        }
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String email = payload.getEmail();
+            boolean emailVerified = Boolean.TRUE.equals(payload.getEmailVerified());
+            if (!emailVerified) throw new RuntimeException("Email not verified");
 
-        GoogleIdToken.Payload payload = idToken.getPayload();
-        String email = payload.getEmail();
-        boolean emailVerified = Boolean.TRUE.equals(payload.getEmailVerified());
-
-        if (!emailVerified) {
-            throw new RuntimeException("Email not verified by Google");
-        }
-
-        // Try to find existing user by email
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    // Generate unique username based on email
-                    String baseUsername = email.split("@")[0];
-                    String username = baseUsername;
-                    int count = 1;
-                    while(userRepository.existsByUsername(username)) {
-                        username = baseUsername + count;
-                        count++;
-                    }
-
-                    User newUser = User.builder()
+            // Find or create Google user
+            User user = userRepository.findByEmail(email)
+                    .orElseGet(() -> userRepository.save(
+                        User.builder()
                             .email(email)
+                            .username(payload.get("name") != null ? payload.get("name").toString() : email)
                             .password("GOOGLE_LOGIN")
-                            .username(username)
-                            .phone("") // optional: remove if you want blank
-                            .build();
-                    return userRepository.save(newUser);
-                });
+                            .emailVerified(true)
+                            .status("ACTIVE")
+                            .build()
+                    ));
 
-        return jwtUtil.generateToken(user.getEmail());
+            String token = jwtUtil.generateToken(user);
+
+            // Fetch roles for the user
+            List<UserRole> userRoles = userRoleRepo.findByUserId(user.getId());
+            List<String> roles = new ArrayList<>();
+            for (UserRole ur : userRoles) {
+                Role role = roleRepo.findById(ur.getRoleId()).orElseThrow();
+                roles.add(role.getName());
+            }
+
+            // Return user info with roles
+            return Map.of(
+                "token", token,
+                "user", Map.of(
+                    "id", user.getId(),
+                    "email", user.getEmail(),
+                    "username", user.getUsername(),
+                    "phone", user.getPhone() != null ? user.getPhone() : "",
+                    "status", user.getStatus(),
+                    "roles", roles
+                )
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Google login failed: " + e.getMessage());
+        }
     }
-
 }

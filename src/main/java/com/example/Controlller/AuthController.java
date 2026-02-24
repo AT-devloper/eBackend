@@ -1,6 +1,10 @@
-package com.example.Controlller; // Fixed typo in package name
+package com.example.Controlller;
+
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,15 +23,26 @@ public class AuthController {
     private AuthService authService;
 
     @Autowired
-    private GoogleAuthService googleAuthService; // Injected as instance
+    private GoogleAuthService googleAuthService;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRegister req) {
-        return authService.login(req);
+    public ResponseEntity<?> login(@RequestBody LoginRegister req) {
+        try {
+            Map<String, Object> response = authService.login(req);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
 
     @PostMapping("/google")
-    public String googleLogin(@RequestBody GoogleLoginRequest req) {
-        return googleAuthService.loginWithGoogle(req.getIdToken()); // use injected instance
-    }
-}
+    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequest req) {
+        try {
+            Map<String, Object> response = googleAuthService.loginWithGoogle(req.getIdToken());
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }}

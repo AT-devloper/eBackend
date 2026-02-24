@@ -16,10 +16,9 @@ import com.example.Service.BrandService;
 @RestController
 @RequestMapping("/api/brands")
 public class BrandController {
+	@Autowired
+    BrandService brandService;
 
-    private final BrandService brandService;
-
-    @Autowired
     public BrandController(BrandService brandService) {
         this.brandService = brandService;
     }
